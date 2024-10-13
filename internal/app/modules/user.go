@@ -2,9 +2,9 @@ package modules
 
 import (
 	"log"
-	"seeker/internal/data/repositories"
-	"seeker/internal/domain/storages"
+	"seeker/internal/domain/repositories"
 	"seeker/internal/domain/usecases"
+	"seeker/internal/infrastructure/postgresql"
 	"seeker/internal/transport/handlers"
 	"seeker/pkg/db/postgres"
 
@@ -12,13 +12,13 @@ import (
 )
 
 type UserModule struct {
-	Repository storages.UserStorage
+	Repository repositories.UserRepository
 	Usecase    usecases.UserUsecase
 }
 
 func NewUserModule(router *httprouter.Router, pqClient postgres.Client) *UserModule {
 
-	repository := repositories.NewUserRepository(pqClient)
+	repository := postgresql.NewUserRepository(pqClient)
 	usecase := usecases.NewUserUsecase(repository)
 
 	handlers.NewUserHandler(usecase).Register(router)

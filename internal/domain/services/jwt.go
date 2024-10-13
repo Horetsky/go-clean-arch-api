@@ -26,9 +26,10 @@ func (s *jwtService) GenerateJWTToken(session types.JWTSession) (string, error) 
 func (s *jwtService) GenerateJWTSession(user *entities.User) types.JWTSession {
 	return types.JWTSession{
 		User: types.JWTUser{
-			ID:      user.ID,
-			Email:   user.Email,
-			Picture: user.Picture,
+			ID:            user.ID,
+			Email:         user.Email,
+			Picture:       user.Picture,
+			EmailVerified: user.EmailVerified,
 		},
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"seeker/internal/domain/dto"
 	"seeker/internal/domain/usecases"
+	"seeker/internal/transport/middlewares"
 	"seeker/internal/types"
 	"seeker/pkg/handler"
 	"seeker/pkg/handler/request"
@@ -23,16 +24,17 @@ func NewAuthHandler(usecase usecases.AuthUsecase) handler.Handler {
 }
 
 const (
-	register = "/auth/register"
-	login    = "/auth/login"
+	register    = "/auth/register"
+	login       = "/auth/login"
+	verifyEmail = "/auth/verify-email"
 )
 
 func (h *authHandler) Register(router *httprouter.Router) {
 	router.POST(register, h.handleRegister)
 	router.POST(login, h.handleLogin)
+	router.GET(verifyEmail, middlewares.WithAuth(h.handleVerifyEmail))
 }
 
-// seeker_06_10_
 func (h *authHandler) handleRegister(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var body dto.RegisterUserInput
 
@@ -80,5 +82,25 @@ func (h *authHandler) handleLogin(w http.ResponseWriter, r *http.Request, _ http
 
 	response.PrivateCookie(w, types.AccessTokenCookieKey, tokens.AccessToken)
 	response.PrivateCookie(w, types.RefreshTokenCookieKey, tokens.RefreshToken)
-	response.JSON(w, session, http.StatusCreated)
+	response.JSON(w, session, http.StatusOK)
+}
+
+func (h *authHandler) handleVerifyEmail(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	session, err := request.GetSession(r)
+
+	if err != nil {
+		response.Error(w, err, http.StatusForbidden)
+		return
+	}
+
+	tokens, newSession, err := h.usecase.VerifyEmail(session.Email)
+
+	if err != nil {
+		response.Error(w, err, http.StatusBadRequest)
+		return
+	}
+
+	response.PrivateCookie(w, types.AccessTokenCookieKey, tokens.AccessToken)
+	response.PrivateCookie(w, types.RefreshTokenCookieKey, tokens.RefreshToken)
+	response.JSON(w, newSession, http.StatusOK)
 }

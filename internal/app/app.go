@@ -1,6 +1,7 @@
 package app
 
 import (
+	"seeker/internal/app/config"
 	"seeker/internal/app/modules"
 	"seeker/pkg/db/postgres"
 
@@ -8,7 +9,7 @@ import (
 )
 
 func Start() error {
-	config := NewConfig()
+	config := config.Load()
 	server, router := NewHttpServer()
 
 	postgresqlClient := postgres.NewClient(pgx.ConnConfig{
@@ -22,5 +23,5 @@ func Start() error {
 	userModule := modules.NewUserModule(router, postgresqlClient)
 	modules.NewAuthModule(router, userModule)
 
-	return server.Start(config.Port)
+	return server.Start(config.HTTP.Port)
 }

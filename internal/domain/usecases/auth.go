@@ -1,11 +1,12 @@
 package usecases
 
 import (
+	"log"
 	"seeker/internal/domain/dto"
 	"seeker/internal/domain/entities"
 	errs "seeker/internal/domain/errors"
+	"seeker/internal/domain/repositories"
 	"seeker/internal/domain/services"
-	"seeker/internal/domain/storages"
 	"seeker/internal/types"
 
 	"golang.org/x/crypto/bcrypt"
@@ -15,18 +16,24 @@ type AuthUsecase interface {
 	Register(input dto.RegisterUserInput) (types.JWTTokenResponse, types.JWTSession, error)
 	Login(input dto.LoginUserInput) (types.JWTTokenResponse, types.JWTSession, error)
 	GenerateSession(user *entities.User) (types.JWTTokenResponse, types.JWTSession, error)
+	VerifyEmail(email string) (types.JWTTokenResponse, types.JWTSession, error)
 }
 
 type authUsecase struct {
-	userRepository storages.UserStorage
+	userRepository repositories.UserRepository
 	jwtService     services.JWTService
+	emailService   services.EmailService
 }
 
-func NewAuthUsecase(userRepository storages.UserStorage) AuthUsecase {
-	jwtService := services.NewJWTService()
+func NewAuthUsecase(
+	userRepository repositories.UserRepository,
+	jwtService services.JWTService,
+	emailService services.EmailService,
+) AuthUsecase {
 	return &authUsecase{
 		userRepository: userRepository,
 		jwtService:     jwtService,
+		emailService:   emailService,
 	}
 }
 
@@ -58,6 +65,13 @@ func (u *authUsecase) Register(input dto.RegisterUserInput) (types.JWTTokenRespo
 		return tokens, session, err
 	}
 
+	go func() {
+		err := u.emailService.SendVerificationEmail(newUser.Email)
+		if err != nil {
+			log.Println(err.Error())
+		}
+	}()
+
 	tokens, session, err = u.GenerateSession(newUser)
 
 	if err != nil {
@@ -75,7 +89,7 @@ func (u *authUsecase) Login(input dto.LoginUserInput) (types.JWTTokenResponse, t
 	if err != nil {
 		return tokens, session, err
 	}
-	
+
 	err = bcrypt.CompareHashAndPassword([]byte(dbUser.Password), []byte(input.Password))
 
 	if err != nil {
@@ -83,6 +97,29 @@ func (u *authUsecase) Login(input dto.LoginUserInput) (types.JWTTokenResponse, t
 	}
 
 	tokens, session, err = u.GenerateSession(&dbUser)
+
+	if err != nil {
+		return tokens, session, err
+	}
+
+	return tokens, session, nil
+}
+
+func (u *authUsecase) VerifyEmail(email string) (types.JWTTokenResponse, types.JWTSession, error) {
+	var tokens types.JWTTokenResponse
+	var session types.JWTSession
+
+	newUser := &entities.User{
+		EmailVerified: true,
+	}
+
+	err := u.userRepository.UpdateByEmail(email, newUser)
+
+	if err != nil {
+		return tokens, session, errs.ErrFailedToVerifyEmail
+	}
+
+	tokens, session, err = u.GenerateSession(newUser)
 
 	if err != nil {
 		return tokens, session, err

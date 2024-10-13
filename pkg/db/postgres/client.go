@@ -12,6 +12,7 @@ type Client interface {
 	Begin() (*pgx.Tx, error)
 	Query(sql string, args ...interface{}) (*pgx.Rows, error)
 	QueryRow(sql string, args ...interface{}) *pgx.Row
+	Exec(sql string, arguments ...interface{}) (commandTag pgx.CommandTag, err error)
 }
 
 func NewClient(cfg pgx.ConnConfig) Client {

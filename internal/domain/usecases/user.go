@@ -4,7 +4,7 @@ import (
 	"net/url"
 	"seeker/internal/domain/entities"
 	errs "seeker/internal/domain/errors"
-	"seeker/internal/domain/storages"
+	"seeker/internal/domain/repositories"
 )
 
 type UserUsecase interface {
@@ -12,10 +12,10 @@ type UserUsecase interface {
 }
 
 type userUsecase struct {
-	userRepository storages.UserStorage
+	userRepository repositories.UserRepository
 }
 
-func NewUserUsecase(userRepository storages.UserStorage) UserUsecase {
+func NewUserUsecase(userRepository repositories.UserRepository) UserUsecase {
 	return &userUsecase{
 		userRepository: userRepository,
 	}

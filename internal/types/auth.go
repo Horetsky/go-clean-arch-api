@@ -13,9 +13,10 @@ type JWTSession struct {
 }
 
 type JWTUser struct {
-	ID      string  `json:"id,omitempty"`
-	Email   string  `json:"email,omitempty"`
-	Picture *string `json:"picture,omitempty"`
+	ID            string  `json:"id,omitempty"`
+	Email         string  `json:"email,omitempty"`
+	Picture       *string `json:"picture,omitempty"`
+	EmailVerified bool    `json:"emailVerified"`
 }
 
 const (
