@@ -7,7 +7,6 @@ type Recruiter struct {
 
 type RecruiterProfile struct {
 	ID                string `json:"id,omitempty"`
-	UserID            string `json:"userId,omitempty"`
 	RecruiterID       string `json:"recruiterId,omitempty"`
 	FirstName         string `json:"firstName,omitempty"`
 	LastName          string `json:"lastName,omitempty"`

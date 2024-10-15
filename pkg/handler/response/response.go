@@ -11,7 +11,9 @@ type Response interface {
 }
 
 type errorResponse struct {
-	Message string `json:"message"`
+	Error struct {
+		Message string `json:"message"`
+	} `json:"error"`
 }
 
 type jsonResponse struct {
@@ -36,9 +38,9 @@ func Error(w http.ResponseWriter, err error, status int) {
 	var response errorResponse
 
 	if err == nil {
-		response.Message = "Bad request"
+		response.Error.Message = "Bad request"
 	} else {
-		response.Message = err.Error()
+		response.Error.Message = err.Error()
 	}
 
 	json.NewEncoder(w).Encode(response)

@@ -1,6 +1,7 @@
 package usecases
 
 import (
+	"errors"
 	"log"
 	"seeker/internal/domain/dto"
 	"seeker/internal/domain/entities"
@@ -9,6 +10,7 @@ import (
 	"seeker/internal/domain/services"
 	"seeker/internal/types"
 
+	"github.com/jackc/pgx"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -38,12 +40,17 @@ func NewAuthUsecase(
 }
 
 func (u *authUsecase) Register(input dto.RegisterUserInput) (types.JWTTokenResponse, types.JWTSession, error) {
-	_, err := u.userRepository.GetByEmail(input.Email)
+	dbUser, err := u.userRepository.GetByEmail(input.Email)
 	var tokens types.JWTTokenResponse
 	var session types.JWTSession
 
-	// e == nil means that user exists
-	if err == nil {
+	if err != nil {
+		if !errors.Is(err, pgx.ErrNoRows) {
+			return tokens, session, err
+		}
+	}
+
+	if dbUser.ID != "" {
 		return tokens, session, errs.ErrUserAlreadyExists
 	}
 
@@ -87,7 +94,11 @@ func (u *authUsecase) Login(input dto.LoginUserInput) (types.JWTTokenResponse, t
 	var session types.JWTSession
 
 	if err != nil {
-		return tokens, session, err
+		if errors.Is(err, pgx.ErrNoRows) {
+			return tokens, session, errs.ErrUserDoesNotExist
+		} else {
+			return tokens, session, err
+		}
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(dbUser.Password), []byte(input.Password))
