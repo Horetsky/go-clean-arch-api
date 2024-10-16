@@ -39,7 +39,7 @@ CREATE TABLE recruiters (
     user_id uuid NOT NULL UNIQUE,
 
     CONSTRAINT PK_recruiter_id PRIMARY KEY (id),
-    CONSTRAINT FK_recruiter_user_id FOREIGN KEY (id) REFERENCES users(id) ON DELETE CASCADE
+    CONSTRAINT FK_recruiter_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 CREATE TABLE recruiter_profiles (
     id uuid DEFAULT gen_random_uuid(),

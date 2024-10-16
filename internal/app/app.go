@@ -23,6 +23,7 @@ func Start() error {
 	userModule := modules.NewUserModule(router, postgresqlClient)
 	modules.NewAuthModule(router, userModule)
 	modules.NewTalentModule(router, postgresqlClient)
+	modules.NewRecruiterModule(router, postgresqlClient)
 
 	return server.Start(config.HTTP.Port)
 }
