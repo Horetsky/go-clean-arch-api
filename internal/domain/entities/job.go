@@ -1,7 +1,7 @@
 package entities
 
 type Job struct {
-	ID           string `json:"is,omitempty"`
+	ID           string `json:"id,omitempty"`
 	RecruiterID  string `json:"recruiterId,omitempty"`
 	Category     string `json:"category,omitempty"`
 	Title        string `json:"title,omitempty"`

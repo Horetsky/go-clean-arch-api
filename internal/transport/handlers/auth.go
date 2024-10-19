@@ -5,7 +5,6 @@ import (
 	"seeker/internal/domain/dto"
 	"seeker/internal/domain/usecases"
 	"seeker/internal/transport/middlewares"
-	"seeker/internal/types"
 	"seeker/pkg/handler"
 	"seeker/pkg/handler/request"
 	"seeker/pkg/handler/response"
@@ -55,8 +54,8 @@ func (h *authHandler) handleRegister(w http.ResponseWriter, r *http.Request, _ h
 		return
 	}
 
-	response.PrivateCookie(w, types.AccessTokenCookieKey, tokens.AccessToken)
-	response.PrivateCookie(w, types.RefreshTokenCookieKey, tokens.RefreshToken)
+	response.PrivateCookie(w, dto.AccessTokenCookieKey, tokens.AccessToken)
+	response.PrivateCookie(w, dto.RefreshTokenCookieKey, tokens.RefreshToken)
 	response.JSON(w, session, http.StatusCreated)
 }
 
@@ -80,8 +79,8 @@ func (h *authHandler) handleLogin(w http.ResponseWriter, r *http.Request, _ http
 		return
 	}
 
-	response.PrivateCookie(w, types.AccessTokenCookieKey, tokens.AccessToken)
-	response.PrivateCookie(w, types.RefreshTokenCookieKey, tokens.RefreshToken)
+	response.PrivateCookie(w, dto.AccessTokenCookieKey, tokens.AccessToken)
+	response.PrivateCookie(w, dto.RefreshTokenCookieKey, tokens.RefreshToken)
 	response.JSON(w, session, http.StatusOK)
 }
 
@@ -93,14 +92,14 @@ func (h *authHandler) handleVerifyEmail(w http.ResponseWriter, r *http.Request, 
 		return
 	}
 
-	tokens, newSession, err := h.usecase.VerifyEmail(session.Email)
+	tokens, newSession, err := h.usecase.VerifyEmail(session.User.Email)
 
 	if err != nil {
 		response.Error(w, err, http.StatusBadRequest)
 		return
 	}
 
-	response.PrivateCookie(w, types.AccessTokenCookieKey, tokens.AccessToken)
-	response.PrivateCookie(w, types.RefreshTokenCookieKey, tokens.RefreshToken)
+	response.PrivateCookie(w, dto.AccessTokenCookieKey, tokens.AccessToken)
+	response.PrivateCookie(w, dto.RefreshTokenCookieKey, tokens.RefreshToken)
 	response.JSON(w, newSession, http.StatusOK)
 }

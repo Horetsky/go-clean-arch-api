@@ -30,9 +30,9 @@ func NewTalentUsecase(
 	}
 }
 
-func (t *talentUsecase) CreateProfile(input dto.CreateTalentProfileInput) (entities.Talent, error) {
+func (u *talentUsecase) CreateProfile(input dto.CreateTalentProfileInput) (entities.Talent, error) {
 
-	dbTalent, err := t.talentRepository.GetOneByUserId(input.UserID)
+	dbTalent, err := u.talentRepository.GetOneByUserId(input.UserID)
 
 	if err != nil {
 		if !errors.Is(err, pgx.ErrNoRows) {
@@ -43,7 +43,7 @@ func (t *talentUsecase) CreateProfile(input dto.CreateTalentProfileInput) (entit
 		return entities.Talent{}, errs.ErrTalentAlreadyExists
 	}
 
-	tx, err := t.pqClient.Begin()
+	tx, err := u.pqClient.Begin()
 	defer func() {
 		if err != nil {
 			postgres.HandleTxRollback(tx)
@@ -56,7 +56,7 @@ func (t *talentUsecase) CreateProfile(input dto.CreateTalentProfileInput) (entit
 		UserID: input.UserID,
 	}
 
-	err = t.talentRepository.CreateOne(tx, &newTalent)
+	err = u.talentRepository.CreateOne(tx, &newTalent)
 	if err != nil {
 		return entities.Talent{}, errs.ErrFailedToCreateTalent
 	}
@@ -72,7 +72,7 @@ func (t *talentUsecase) CreateProfile(input dto.CreateTalentProfileInput) (entit
 		Photo:       input.Photo,
 	}
 
-	err = t.talentRepository.CreateProfile(tx, &newTalentProfile)
+	err = u.talentRepository.CreateProfile(tx, &newTalentProfile)
 	if err != nil {
 		return entities.Talent{}, errs.ErrFailedToCreateTalent
 	}

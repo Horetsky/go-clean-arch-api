@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"seeker/internal/types"
+	"seeker/internal/domain/dto"
 )
 
 func GetContextValue(r *http.Request, key string) any {
@@ -12,14 +12,18 @@ func GetContextValue(r *http.Request, key string) any {
 	return ctx.Value(key)
 }
 
-func GetSession(r *http.Request) (*types.JWTUser, error) {
-	session, ok := GetContextValue(r, types.CtxSessionKey).(*types.JWTUser)
+func GetSession(r *http.Request) (*dto.JWTSession, error) {
+	user, ok := GetContextValue(r, dto.CtxSessionKey).(*dto.JWTUser)
 
-	if !ok || session == nil {
+	if !ok || user == nil {
 		return nil, fmt.Errorf("unauthorized")
 	}
 
-	return session, nil
+	session := dto.JWTSession{
+		User: *user,
+	}
+
+	return &session, nil
 }
 
 func ReadBody(r *http.Request, p any) error {

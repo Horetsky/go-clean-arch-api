@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 	"seeker/internal/domain/dto"
+	"seeker/internal/domain/entities"
 	errs "seeker/internal/domain/errors"
 	"seeker/internal/domain/usecases"
 	"seeker/internal/transport/middlewares"
@@ -14,14 +15,17 @@ import (
 )
 
 type recruiterHandler struct {
-	usecase usecases.RecruiterUsecase
+	usecase     usecases.RecruiterUsecase
+	authUsecase usecases.AuthUsecase
 }
 
 func NewRecruiterHandler(
 	usecase usecases.RecruiterUsecase,
+	authUsecase usecases.AuthUsecase,
 ) handler.Handler {
 	return &recruiterHandler{
-		usecase: usecase,
+		usecase:     usecase,
+		authUsecase: authUsecase,
 	}
 }
 
@@ -33,7 +37,7 @@ func (h *recruiterHandler) Register(router *httprouter.Router) {
 	router.POST(recruiter, middlewares.WithAuth(h.handleCreateRecruiterProfile))
 }
 
-func (h *recruiterHandler) handleCreateRecruiterProfile(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+func (h *recruiterHandler) handleCreateRecruiterProfile(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	session, err := request.GetSession(r)
 
 	if err != nil {
@@ -42,7 +46,7 @@ func (h *recruiterHandler) handleCreateRecruiterProfile(w http.ResponseWriter, r
 	}
 
 	body := dto.CreateRecruiterProfileInput{
-		UserID: session.ID,
+		UserID: session.User.ID,
 	}
 
 	if err := request.ReadBody(r, &body); err != nil {
@@ -57,5 +61,22 @@ func (h *recruiterHandler) handleCreateRecruiterProfile(w http.ResponseWriter, r
 		return
 	}
 
-	response.JSON(w, profile, http.StatusCreated)
+	user := &entities.User{
+		ID:            session.User.ID,
+		Email:         session.User.Email,
+		Picture:       session.User.Picture,
+		EmailVerified: session.User.EmailVerified,
+		Recruiter:     &profile,
+	}
+
+	tokens, s, err := h.authUsecase.GenerateSession(user)
+
+	if err != nil {
+		response.Error(w, err, http.StatusBadRequest)
+		return
+	}
+
+	response.PrivateCookie(w, dto.AccessTokenCookieKey, tokens.AccessToken)
+	response.PrivateCookie(w, dto.RefreshTokenCookieKey, tokens.RefreshToken)
+	response.JSON(w, s, http.StatusCreated)
 }

@@ -1,7 +1,7 @@
 package modules
 
 import (
-	"seeker/internal/domain/repositories"
+	"log"
 	"seeker/internal/domain/usecases"
 	"seeker/internal/infrastructure/postgresql"
 	"seeker/internal/transport/handlers"
@@ -11,19 +11,18 @@ import (
 )
 
 type RecruiterModule struct {
-	Repository repositories.RecruiterRepository
-	Usecase    usecases.RecruiterUsecase
+	Usecase usecases.RecruiterUsecase
 }
 
-func NewRecruiterModule(router *httprouter.Router, pqClient postgres.Client) *RecruiterModule {
-
+func NewRecruiterModule(router *httprouter.Router, pqClient postgres.Client, authUsecase usecases.AuthUsecase) usecases.RecruiterUsecase {
 	repository := postgresql.NewRecruiterRepository(pqClient)
-	usecase := usecases.NewRecruiterUsecase(repository, pqClient)
+	jobRepository := postgresql.NewJobRepository(pqClient)
 
-	handlers.NewRecruiterHandler(usecase).Register(router)
+	usecase := usecases.NewRecruiterUsecase(repository, jobRepository, pqClient)
 
-	return &RecruiterModule{
-		Repository: repository,
-		Usecase:    usecase,
-	}
+	handlers.NewRecruiterHandler(usecase, authUsecase).Register(router)
+
+	log.Println("RecruiterModule dependencies initialized")
+
+	return usecase
 }

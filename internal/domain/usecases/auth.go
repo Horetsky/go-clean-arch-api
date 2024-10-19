@@ -8,17 +8,16 @@ import (
 	errs "seeker/internal/domain/errors"
 	"seeker/internal/domain/repositories"
 	"seeker/internal/domain/services"
-	"seeker/internal/types"
 
 	"github.com/jackc/pgx"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthUsecase interface {
-	Register(input dto.RegisterUserInput) (types.JWTTokenResponse, types.JWTSession, error)
-	Login(input dto.LoginUserInput) (types.JWTTokenResponse, types.JWTSession, error)
-	GenerateSession(user *entities.User) (types.JWTTokenResponse, types.JWTSession, error)
-	VerifyEmail(email string) (types.JWTTokenResponse, types.JWTSession, error)
+	Register(input dto.RegisterUserInput) (dto.JWTTokenResponse, dto.JWTSession, error)
+	Login(input dto.LoginUserInput) (dto.JWTTokenResponse, dto.JWTSession, error)
+	GenerateSession(user *entities.User) (dto.JWTTokenResponse, dto.JWTSession, error)
+	VerifyEmail(email string) (dto.JWTTokenResponse, dto.JWTSession, error)
 }
 
 type authUsecase struct {
@@ -39,10 +38,10 @@ func NewAuthUsecase(
 	}
 }
 
-func (u *authUsecase) Register(input dto.RegisterUserInput) (types.JWTTokenResponse, types.JWTSession, error) {
+func (u *authUsecase) Register(input dto.RegisterUserInput) (dto.JWTTokenResponse, dto.JWTSession, error) {
 	dbUser, err := u.userRepository.GetByEmail(input.Email)
-	var tokens types.JWTTokenResponse
-	var session types.JWTSession
+	var tokens dto.JWTTokenResponse
+	var session dto.JWTSession
 
 	if err != nil {
 		if !errors.Is(err, pgx.ErrNoRows) {
@@ -88,10 +87,10 @@ func (u *authUsecase) Register(input dto.RegisterUserInput) (types.JWTTokenRespo
 	return tokens, session, nil
 }
 
-func (u *authUsecase) Login(input dto.LoginUserInput) (types.JWTTokenResponse, types.JWTSession, error) {
+func (u *authUsecase) Login(input dto.LoginUserInput) (dto.JWTTokenResponse, dto.JWTSession, error) {
 	dbUser, err := u.userRepository.GetByEmail(input.Email)
-	var tokens types.JWTTokenResponse
-	var session types.JWTSession
+	var tokens dto.JWTTokenResponse
+	var session dto.JWTSession
 
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -116,9 +115,9 @@ func (u *authUsecase) Login(input dto.LoginUserInput) (types.JWTTokenResponse, t
 	return tokens, session, nil
 }
 
-func (u *authUsecase) VerifyEmail(email string) (types.JWTTokenResponse, types.JWTSession, error) {
-	var tokens types.JWTTokenResponse
-	var session types.JWTSession
+func (u *authUsecase) VerifyEmail(email string) (dto.JWTTokenResponse, dto.JWTSession, error) {
+	var tokens dto.JWTTokenResponse
+	var session dto.JWTSession
 
 	newUser := &entities.User{
 		EmailVerified: true,
@@ -139,9 +138,9 @@ func (u *authUsecase) VerifyEmail(email string) (types.JWTTokenResponse, types.J
 	return tokens, session, nil
 }
 
-func (u *authUsecase) GenerateSession(user *entities.User) (types.JWTTokenResponse, types.JWTSession, error) {
-	var tokens types.JWTTokenResponse
-	var session types.JWTSession
+func (u *authUsecase) GenerateSession(user *entities.User) (dto.JWTTokenResponse, dto.JWTSession, error) {
+	var tokens dto.JWTTokenResponse
+	var session dto.JWTSession
 
 	session = u.jwtService.GenerateJWTSession(user)
 

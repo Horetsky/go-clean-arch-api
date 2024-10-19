@@ -1,7 +1,7 @@
 package modules
 
 import (
-	"seeker/internal/domain/repositories"
+	"log"
 	"seeker/internal/domain/usecases"
 	"seeker/internal/infrastructure/postgresql"
 	"seeker/internal/transport/handlers"
@@ -11,19 +11,17 @@ import (
 )
 
 type TalentModule struct {
-	Repository repositories.TalentRepository
-	Usecase    usecases.TalentUsecase
+	Usecase usecases.TalentUsecase
 }
 
-func NewTalentModule(router *httprouter.Router, pqClient postgres.Client) *TalentModule {
+func NewTalentModule(router *httprouter.Router, pqClient postgres.Client, authUsecase usecases.AuthUsecase) usecases.TalentUsecase {
 
 	repository := postgresql.NewTalentRepository(pqClient)
 	usecase := usecases.NewTalentUsecase(repository, pqClient)
 
-	handlers.NewTalentHandler(usecase).Register(router)
+	handlers.NewTalentHandler(usecase, authUsecase).Register(router)
 
-	return &TalentModule{
-		Repository: repository,
-		Usecase:    usecase,
-	}
+	log.Println("TalentModule dependencies initialized")
+
+	return usecase
 }

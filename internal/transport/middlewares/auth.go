@@ -3,8 +3,8 @@ package middlewares
 import (
 	"context"
 	"net/http"
+	"seeker/internal/domain/dto"
 	errs "seeker/internal/domain/errors"
-	"seeker/internal/types"
 	"seeker/pkg/handler/response"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -21,7 +21,7 @@ func WithAuth(h httprouter.Handle) httprouter.Handle {
 			return
 		}
 
-		session := &types.JWTSession{}
+		session := &dto.JWTSession{}
 
 		err = parseJWTSession(tokens.AccessToken, session)
 
@@ -30,19 +30,19 @@ func WithAuth(h httprouter.Handle) httprouter.Handle {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), types.CtxSessionKey, &session.User)
+		ctx := context.WithValue(r.Context(), dto.CtxSessionKey, &session.User)
 		r = r.WithContext(ctx)
 
 		h(w, r, params)
 	}
 }
 
-func getAuthToken(r *http.Request) (types.JWTTokenResponse, error) {
+func getAuthToken(r *http.Request) (dto.JWTTokenResponse, error) {
 
-	var tokens types.JWTTokenResponse
+	var tokens dto.JWTTokenResponse
 
-	accessToken, err := r.Cookie(types.AccessTokenCookieKey)
-	refreshToken, err := r.Cookie(types.RefreshTokenCookieKey)
+	accessToken, err := r.Cookie(dto.AccessTokenCookieKey)
+	refreshToken, err := r.Cookie(dto.RefreshTokenCookieKey)
 
 	if err != nil {
 		return tokens, errs.ErrUnauthorized
@@ -54,7 +54,7 @@ func getAuthToken(r *http.Request) (types.JWTTokenResponse, error) {
 	return tokens, nil
 }
 
-func parseJWTSession(token string, session *types.JWTSession) error {
+func parseJWTSession(token string, session *dto.JWTSession) error {
 	_, err := jwt.ParseWithClaims(token, session, func(token *jwt.Token) (interface{}, error) {
 		return []byte("secret"), nil
 	})

@@ -13,19 +13,23 @@ import (
 
 type RecruiterUsecase interface {
 	CreateProfile(input dto.CreateRecruiterProfileInput) (entities.Recruiter, error)
+	PostJob(input dto.PostJobDTO) (entities.Job, error)
 }
 
 type recruiterUsecase struct {
 	recruiterRepository repositories.RecruiterRepository
+	jobRepository       repositories.JobRepository
 	pqClient            postgres.Client
 }
 
 func NewRecruiterUsecase(
 	recruiterRepository repositories.RecruiterRepository,
+	jobRepository repositories.JobRepository,
 	pqClient postgres.Client,
 ) RecruiterUsecase {
 	return &recruiterUsecase{
 		recruiterRepository: recruiterRepository,
+		jobRepository:       jobRepository,
 		pqClient:            pqClient,
 	}
 }
@@ -78,4 +82,22 @@ func (u *recruiterUsecase) CreateProfile(input dto.CreateRecruiterProfileInput) 
 	newRecruiter.Profile = newRecruiterProfile
 
 	return newRecruiter, nil
+}
+
+func (u *recruiterUsecase) PostJob(input dto.PostJobDTO) (entities.Job, error) {
+	newJob := entities.Job{
+		RecruiterID:  input.RecruiterID,
+		Category:     input.Category,
+		Title:        input.Title,
+		Description:  input.Description,
+		Requirements: input.Requirements,
+	}
+
+	err := u.jobRepository.CreateJob(&newJob)
+
+	if err != nil {
+		return entities.Job{}, errs.ErrFailedToPostJob
+	}
+
+	return newJob, nil
 }

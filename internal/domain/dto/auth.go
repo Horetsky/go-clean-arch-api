@@ -1,6 +1,16 @@
-package types
+package dto
 
 import "github.com/golang-jwt/jwt/v5"
+
+type RegisterUserInput struct {
+	Email    string
+	Password string
+}
+
+type LoginUserInput struct {
+	Email    string
+	Password string
+}
 
 type JWTTokenResponse struct {
 	AccessToken  string `json:"access_token"`
@@ -14,6 +24,8 @@ type JWTSession struct {
 
 type JWTUser struct {
 	ID            string  `json:"id,omitempty"`
+	TalentID      string  `json:"talentId,omitempty"`
+	RecruiterID   string  `json:"recruiterId,omitempty"`
 	Email         string  `json:"email,omitempty"`
 	Picture       *string `json:"picture,omitempty"`
 	EmailVerified bool    `json:"emailVerified"`

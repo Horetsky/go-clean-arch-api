@@ -5,26 +5,24 @@ import (
 	"seeker/internal/domain/services"
 	"seeker/internal/domain/usecases"
 	"seeker/internal/infrastructure/emailSender"
+	"seeker/internal/infrastructure/postgresql"
 	"seeker/internal/transport/handlers"
+	"seeker/pkg/db/postgres"
 
 	"github.com/julienschmidt/httprouter"
 )
 
-type AuthModule struct {
-	Usecase usecases.AuthUsecase
-}
+func NewAuthModule(router *httprouter.Router, pqClient postgres.Client) usecases.AuthUsecase {
 
-func NewAuthModule(router *httprouter.Router, userModule *UserModule) *AuthModule {
+	userRepository := postgresql.NewUserRepository(pqClient)
 	jwtService := services.NewJWTService()
-	emailSender := emailSender.NewSmtpSender()
+	sender := emailSender.NewSmtpSender()
 
-	usecase := usecases.NewAuthUsecase(userModule.Repository, jwtService, emailSender)
+	usecase := usecases.NewAuthUsecase(userRepository, jwtService, sender)
 
 	handlers.NewAuthHandler(usecase).Register(router)
 
 	log.Println("AuthModule dependencies initialized")
 
-	return &AuthModule{
-		Usecase: usecase,
-	}
+	return usecase
 }

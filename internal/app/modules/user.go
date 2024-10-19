@@ -2,7 +2,6 @@ package modules
 
 import (
 	"log"
-	"seeker/internal/domain/repositories"
 	"seeker/internal/domain/usecases"
 	"seeker/internal/infrastructure/postgresql"
 	"seeker/internal/transport/handlers"
@@ -12,11 +11,10 @@ import (
 )
 
 type UserModule struct {
-	Repository repositories.UserRepository
-	Usecase    usecases.UserUsecase
+	Usecase usecases.UserUsecase
 }
 
-func NewUserModule(router *httprouter.Router, pqClient postgres.Client) *UserModule {
+func NewUserModule(router *httprouter.Router, pqClient postgres.Client) usecases.UserUsecase {
 
 	repository := postgresql.NewUserRepository(pqClient)
 	usecase := usecases.NewUserUsecase(repository)
@@ -25,8 +23,5 @@ func NewUserModule(router *httprouter.Router, pqClient postgres.Client) *UserMod
 
 	log.Println("UserModule dependencies initialized")
 
-	return &UserModule{
-		Repository: repository,
-		Usecase:    usecase,
-	}
+	return usecase
 }

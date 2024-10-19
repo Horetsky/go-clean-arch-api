@@ -9,21 +9,22 @@ import (
 )
 
 func Start() error {
-	config := config.Load()
+	cfg := config.Load()
 	server, router := NewHttpServer()
 
 	postgresqlClient := postgres.NewClient(pgx.ConnConfig{
-		Host:     config.DB.Host,
-		Port:     uint16(config.DB.Port),
-		Database: config.DB.Name,
-		User:     config.DB.User,
-		Password: config.DB.Password,
+		Host:     cfg.DB.Host,
+		Port:     uint16(cfg.DB.Port),
+		Database: cfg.DB.Name,
+		User:     cfg.DB.User,
+		Password: cfg.DB.Password,
 	})
 
-	userModule := modules.NewUserModule(router, postgresqlClient)
-	modules.NewAuthModule(router, userModule)
-	modules.NewTalentModule(router, postgresqlClient)
-	modules.NewRecruiterModule(router, postgresqlClient)
+	modules.NewUserModule(router, postgresqlClient)
+	auth := modules.NewAuthModule(router, postgresqlClient)
+	modules.NewTalentModule(router, postgresqlClient, auth)
+	recruiter := modules.NewRecruiterModule(router, postgresqlClient, auth)
+	modules.NewJobModule(router, postgresqlClient, recruiter)
 
-	return server.Start(config.HTTP.Port)
+	return server.Start(cfg.HTTP.Port)
 }

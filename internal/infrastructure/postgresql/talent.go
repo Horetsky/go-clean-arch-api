@@ -22,7 +22,7 @@ func NewTalentRepository(client postgres.Client) repositories.TalentRepository {
 
 func (r *talentRepository) CreateOne(tx *pgx.Tx, talent *entities.Talent) error {
 	query := `
-		INSERT INTO "talents" (user_id)
+		INSERT INTO talents (user_id)
 		VALUES ($1)
 		RETURNING id
 	`
@@ -55,7 +55,7 @@ func (r *talentRepository) GetOneByUserId(userId string) (entities.Talent, error
 
 func (r *talentRepository) CreateProfile(tx *pgx.Tx, profile *entities.TalentProfile) error {
 	query := `
-		INSERT INTO "talent_profiles" (talent_id, category, first_name, last_name, phone, linkedin_url, resume_url, photo)
+		INSERT INTO talent_profiles (talent_id, category, first_name, last_name, phone, linkedin_url, resume_url, photo)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 		RETURNING id
 	`
@@ -121,7 +121,7 @@ func (r *talentRepository) GetProfileByTalentId(talentId string) (entities.Talen
 
 func (r *talentRepository) UpdateProfileByUserId(userId string, profile *entities.TalentProfile) error {
 	query := `
-		UPDATE "talent_profiles" SET
+		UPDATE talent_profiles SET
 	`
 
 	str.ForEach(profile, func(key string, val any) {
