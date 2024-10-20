@@ -22,9 +22,9 @@ func Start() error {
 
 	modules.NewUserModule(router, postgresqlClient)
 	auth := modules.NewAuthModule(router, postgresqlClient)
-	modules.NewTalentModule(router, postgresqlClient, auth)
+	talent := modules.NewTalentModule(router, postgresqlClient, auth)
 	recruiter := modules.NewRecruiterModule(router, postgresqlClient, auth)
-	modules.NewJobModule(router, postgresqlClient, recruiter)
+	modules.NewJobModule(router, postgresqlClient, recruiter, talent)
 
 	return server.Start(cfg.HTTP.Port)
 }

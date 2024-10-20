@@ -79,7 +79,7 @@ func (u *recruiterUsecase) CreateProfile(input dto.CreateRecruiterProfileInput) 
 		return entities.Recruiter{}, errs.ErrFailedToCreateRecruiter
 	}
 
-	newRecruiter.Profile = newRecruiterProfile
+	newRecruiter.Profile = &newRecruiterProfile
 
 	return newRecruiter, nil
 }

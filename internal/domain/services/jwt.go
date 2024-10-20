@@ -27,6 +27,7 @@ func (s *jwtService) GenerateJWTSession(user *entities.User) dto.JWTSession {
 	jwtUser := dto.JWTUser{
 		ID:            user.ID,
 		Email:         user.Email,
+		Type:          user.Type,
 		Picture:       user.Picture,
 		EmailVerified: user.EmailVerified,
 	}

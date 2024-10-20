@@ -8,3 +8,12 @@ type Job struct {
 	Description  string `json:"description,omitempty"`
 	Requirements string `json:"requirements,omitempty"`
 }
+type JobWithRecruiter struct {
+	Job
+	Recruiter Recruiter
+}
+
+type JobApplication struct {
+	TalentID string `json:"talentId,omitempty"`
+	JobID    string `json:"jobId,omitempty"`
+}

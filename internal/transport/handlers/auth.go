@@ -42,12 +42,7 @@ func (h *authHandler) handleRegister(w http.ResponseWriter, r *http.Request, _ h
 		return
 	}
 
-	input := dto.RegisterUserInput{
-		Email:    body.Email,
-		Password: body.Password,
-	}
-
-	tokens, session, err := h.usecase.Register(input)
+	tokens, session, err := h.usecase.Register(body)
 
 	if err != nil {
 		response.Error(w, err, http.StatusBadRequest)

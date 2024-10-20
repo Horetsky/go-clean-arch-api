@@ -64,12 +64,13 @@ func (h *recruiterHandler) handleCreateRecruiterProfile(w http.ResponseWriter, r
 	user := &entities.User{
 		ID:            session.User.ID,
 		Email:         session.User.Email,
+		Type:          session.User.Type,
 		Picture:       session.User.Picture,
 		EmailVerified: session.User.EmailVerified,
 		Recruiter:     &profile,
 	}
 
-	tokens, s, err := h.authUsecase.GenerateSession(user)
+	tokens, _, err := h.authUsecase.GenerateSession(user)
 
 	if err != nil {
 		response.Error(w, err, http.StatusBadRequest)
@@ -78,5 +79,5 @@ func (h *recruiterHandler) handleCreateRecruiterProfile(w http.ResponseWriter, r
 
 	response.PrivateCookie(w, dto.AccessTokenCookieKey, tokens.AccessToken)
 	response.PrivateCookie(w, dto.RefreshTokenCookieKey, tokens.RefreshToken)
-	response.JSON(w, s, http.StatusCreated)
+	response.JSON(w, profile, http.StatusCreated)
 }

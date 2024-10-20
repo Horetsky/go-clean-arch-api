@@ -9,10 +9,15 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-func NewJobModule(router *httprouter.Router, _ postgres.Client, recruiterUsecase usecases.RecruiterUsecase) usecases.JobUsecase {
+func NewJobModule(
+	router *httprouter.Router,
+	_ postgres.Client,
+	recruiterUsecase usecases.RecruiterUsecase,
+	talentUsecase usecases.TalentUsecase,
+) usecases.JobUsecase {
 
 	usecase := usecases.NewJobUsecase()
-	handlers.NewJobHandler(recruiterUsecase).Register(router)
+	handlers.NewJobHandler(recruiterUsecase, talentUsecase).Register(router)
 
 	log.Println("JobModule dependencies initialized")
 

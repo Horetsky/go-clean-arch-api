@@ -1,9 +1,9 @@
 package entities
 
 type Talent struct {
-	ID      string        `json:"id,omitempty"`
-	UserID  string        `json:"userId,omitempty"`
-	Profile TalentProfile `json:"profile,omitempty"`
+	ID      string         `json:"id,omitempty"`
+	UserID  string         `json:"userId,omitempty"`
+	Profile *TalentProfile `json:"profile,omitempty"`
 }
 
 type TalentProfile struct {

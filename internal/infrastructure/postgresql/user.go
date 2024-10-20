@@ -20,14 +20,21 @@ func NewUserRepository(client postgres.Client) repositories.UserRepository {
 
 func (r *userRepository) GetByEmail(email string) (entities.User, error) {
 	query := `
-		SELECT id, email, picture, email_verified, password FROM "users"
+		SELECT id, email, picture, email_verified, password, type FROM users
 		WHERE email = $1
 	`
 
 	row := r.client.QueryRow(query, email)
 	var user entities.User
 
-	if err := row.Scan(&user.ID, &user.Email, &user.Picture, &user.EmailVerified, &user.Password); err != nil {
+	if err := row.Scan(
+		&user.ID,
+		&user.Email,
+		&user.Picture,
+		&user.EmailVerified,
+		&user.Password,
+		&user.Type,
+	); err != nil {
 		return user, postgres.NewError(err)
 	}
 
@@ -52,12 +59,12 @@ func (r *userRepository) GetByID(id string) (entities.User, error) {
 
 func (r *userRepository) CreateOne(user *entities.User) error {
 	query := `
-		INSERT INTO "users" (email, password) 
-		VALUES ($1, $2)
+		INSERT INTO "users" (email, password, type) 
+		VALUES ($1, $2, $3)
 		RETURNING id, email, picture, email_verified
 	`
 
-	row := r.client.QueryRow(query, user.Email, user.Password)
+	row := r.client.QueryRow(query, user.Email, user.Password, user.Type)
 
 	if err := row.Scan(&user.ID, &user.Email, &user.Picture, &user.EmailVerified); err != nil {
 		return postgres.NewError(err)
@@ -90,11 +97,17 @@ func (r *userRepository) UpdateByEmail(email string, user *entities.User) error 
 
 	query = query[:len(query)-1]
 	query += fmt.Sprintf(" WHERE email = '%s'", email)
-	query += " RETURNING id, email, picture, email_verified"
+	query += " RETURNING id, email, picture, email_verified, type"
 
 	rows := r.client.QueryRow(query)
 
-	if err := rows.Scan(&user.ID, &user.Email, &user.Picture, &user.EmailVerified); err != nil {
+	if err := rows.Scan(
+		&user.ID,
+		&user.Email,
+		&user.Picture,
+		&user.EmailVerified,
+		&user.Type,
+	); err != nil {
 		return postgres.NewError(err)
 	}
 

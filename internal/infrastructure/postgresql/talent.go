@@ -36,6 +36,45 @@ func (r *talentRepository) CreateOne(tx *pgx.Tx, talent *entities.Talent) error 
 	return nil
 }
 
+func (r *talentRepository) FindByID(id string) (entities.Talent, error) {
+	query := `
+		SELECT
+		    talent.id,
+		    talent.user_id,
+		    profile.category,
+			profile.first_name,
+			profile.last_name,
+			profile.phone,
+			profile.linkedIn_url,
+			profile.resume_url,
+			profile.photo
+		FROM talents as talent
+		JOIN talent_profiles AS profile ON profile.talent_id = talent.id
+		WHERE talent.id = $1
+	`
+
+	row := r.client.QueryRow(query, id)
+
+	var talent entities.Talent
+	talent.Profile = &entities.TalentProfile{}
+
+	if err := row.Scan(
+		&talent.ID,
+		&talent.UserID,
+		&talent.Profile.Category,
+		&talent.Profile.FirstName,
+		&talent.Profile.LastName,
+		&talent.Profile.Phone,
+		&talent.Profile.LinkedInUrl,
+		&talent.Profile.ResumeUrl,
+		&talent.Profile.Photo,
+	); err != nil {
+		return talent, postgres.NewError(err)
+	}
+
+	return talent, nil
+}
+
 func (r *talentRepository) GetOneByUserId(userId string) (entities.Talent, error) {
 	query := `
 		SELECT id, user_id FROM talents

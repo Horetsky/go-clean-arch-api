@@ -3,13 +3,14 @@ package dto
 import "github.com/golang-jwt/jwt/v5"
 
 type RegisterUserInput struct {
-	Email    string
-	Password string
+	Email    string `json:"email,omitempty"`
+	Password string `json:"password,omitempty"`
+	Type     string `json:"type,omitempty"`
 }
 
 type LoginUserInput struct {
-	Email    string
-	Password string
+	Email    string `json:"email,omitempty"`
+	Password string `json:"password,omitempty"`
 }
 
 type JWTTokenResponse struct {
@@ -24,6 +25,7 @@ type JWTSession struct {
 
 type JWTUser struct {
 	ID            string  `json:"id,omitempty"`
+	Type          string  `json:"type,omitempty"`
 	TalentID      string  `json:"talentId,omitempty"`
 	RecruiterID   string  `json:"recruiterId,omitempty"`
 	Email         string  `json:"email,omitempty"`

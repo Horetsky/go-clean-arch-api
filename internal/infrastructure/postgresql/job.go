@@ -36,14 +36,95 @@ func (r *jobRepository) CreateJob(job *entities.Job) error {
 	return nil
 }
 
-func (r *jobRepository) GetJobByID(id string) (entities.Job, error) {
+func (r *jobRepository) FindByID(id string) (entities.JobWithRecruiter, error) {
+	query := `
+		SELECT 
+		    job.id,
+		    job.recruiter_id,
+		    job.category,
+		    job.title,
+		    job.description,
+		    job.requirements,
+		    recruiter.id,
+		    recruiter.user_id,
+		    profile.first_name,
+			profile.last_name,
+			profile.phone,
+			profile.linkedIn_url,
+			profile.company_name,
+			profile.company_website_url
+		FROM jobs AS job
+		JOIN recruiters AS recruiter ON job.recruiter_id = recruiter.id
+		JOIN recruiter_profiles AS profile ON recruiter.id = profile.recruiter_id
+		WHERE job.id = $1
+	`
+
+	row := r.client.QueryRow(query, id)
+
+	var job entities.JobWithRecruiter
+	job.Recruiter = entities.Recruiter{}
+	job.Recruiter.Profile = &entities.RecruiterProfile{}
+
+	if err := row.Scan(
+		&job.ID,
+		&job.RecruiterID,
+		&job.Category,
+		&job.Title,
+		&job.Description,
+		&job.Requirements,
+		&job.Recruiter.ID,
+		&job.Recruiter.UserID,
+		&job.Recruiter.Profile.FirstName,
+		&job.Recruiter.Profile.LastName,
+		&job.Recruiter.Profile.Phone,
+		&job.Recruiter.Profile.LinkedInUrl,
+		&job.Recruiter.Profile.CompanyName,
+		&job.Recruiter.Profile.CompanyWebsiteUrl,
+	); err != nil {
+		return job, postgres.NewError(err)
+	}
+
+	return job, nil
+}
+
+func (r *jobRepository) FindByRecruiter(recruiterId string) (entities.Job, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (r *jobRepository) GetJobByRecruiter(recruiterId string) (entities.Job, error) {
-	//TODO implement me
-	panic("implement me")
+func (r *jobRepository) ApplyJob(talentId, jobId string) error {
+	query := `
+		INSERT INTO job_applications (talent_id, job_id)
+		VALUES ($1, $2)
+	`
+
+	row := r.client.QueryRow(query, talentId, jobId)
+
+	if err := row.Scan(); err != nil {
+		return postgres.NewError(err)
+	}
+
+	return nil
+}
+
+func (r *jobRepository) FindApplication(talentId, jobId string) (entities.JobApplication, error) {
+	query := `
+		SELECT talent_id, job_id FROM job_applications
+		WHERE talent_id = $1 AND job_id = $2
+	`
+
+	row := r.client.QueryRow(query, talentId, jobId)
+
+	var application entities.JobApplication
+
+	if err := row.Scan(
+		&application.TalentID,
+		&application.JobID,
+	); err != nil {
+		return entities.JobApplication{}, postgres.NewError(err)
+	}
+
+	return application, nil
 }
 
 func (r *jobRepository) UpdateJob(job *entities.Job) error {

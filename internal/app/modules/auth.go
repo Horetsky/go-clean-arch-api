@@ -15,10 +15,18 @@ import (
 func NewAuthModule(router *httprouter.Router, pqClient postgres.Client) usecases.AuthUsecase {
 
 	userRepository := postgresql.NewUserRepository(pqClient)
+	talentRepository := postgresql.NewTalentRepository(pqClient)
+	recruiterRepository := postgresql.NewRecruiterRepository(pqClient)
 	jwtService := services.NewJWTService()
-	sender := emailSender.NewSmtpSender()
+	emailService := emailSender.NewSmtpSender()
 
-	usecase := usecases.NewAuthUsecase(userRepository, jwtService, sender)
+	usecase := usecases.NewAuthUsecase(
+		userRepository,
+		talentRepository,
+		recruiterRepository,
+		jwtService,
+		emailService,
+	)
 
 	handlers.NewAuthHandler(usecase).Register(router)
 

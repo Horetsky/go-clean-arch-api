@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"html/template"
 	"seeker/internal/app/config"
+	"seeker/internal/domain/dto"
 	"seeker/internal/domain/services"
 
 	"gopkg.in/gomail.v2"
@@ -13,6 +14,9 @@ import (
 
 //go:embed templates/verify-email.html
 var verificationEmailTemplate string
+
+//go:embed templates/job-application.html
+var jobApplicationTemplate string
 
 type smtpSender struct {
 	emailFrom string
@@ -44,6 +48,37 @@ func (s *smtpSender) SendVerificationEmail(to string) error {
 		Website: "Seeker",
 		Name:    to,
 		Link:    fmt.Sprintf("%s/auth/verify-email", s.publicUrl),
+	})
+
+	if err != nil {
+		return err
+	}
+
+	message.SetBody("text/html", content)
+
+	return s.send(message)
+}
+
+func (s *smtpSender) SendJobApplicationEmail(to string, input dto.SendJobApplicationEmailDTO) error {
+	message := gomail.NewMessage()
+	message.SetHeader("From", s.emailFrom)
+	message.SetHeader("To", to)
+	message.SetHeader("Subject", "New job application")
+
+	content, err := parseTemplateToStr(jobApplicationTemplate, struct {
+		JobTitle      string
+		RecruiterName string
+		ApplicantName string
+		CompanyName   string
+		Link          string
+		Website       string
+	}{
+		JobTitle:      input.JobTitle,
+		RecruiterName: input.RecruiterName,
+		ApplicantName: input.ApplicantName,
+		CompanyName:   input.CompanyName,
+		Website:       "Seeker",
+		Link:          fmt.Sprintf("%s/auth/verify-email", s.publicUrl),
 	})
 
 	if err != nil {

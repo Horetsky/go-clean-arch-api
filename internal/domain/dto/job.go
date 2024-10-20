@@ -16,3 +16,15 @@ type UpdateJobDTO struct {
 	Description  string `json:"description,omitempty"`
 	Requirements string `json:"requirements,omitempty"`
 }
+
+type ApplyJobDTO struct {
+	TalentID string `json:"talentId,omitempty"`
+	JobID    string `json:"jobId,omitempty"`
+}
+
+type SendJobApplicationEmailDTO struct {
+	JobTitle      string
+	RecruiterName string
+	ApplicantName string
+	CompanyName   string
+}

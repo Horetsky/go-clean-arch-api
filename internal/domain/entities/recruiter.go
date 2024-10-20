@@ -1,10 +1,10 @@
 package entities
 
 type Recruiter struct {
-	ID      string           `json:"id,omitempty"`
-	UserID  string           `json:"userId,omitempty"`
-	Profile RecruiterProfile `json:"profile,omitempty"`
-	Jobs    []Job            `json:"jobs,omitempty"`
+	ID      string            `json:"id,omitempty"`
+	UserID  string            `json:"userId,omitempty"`
+	Profile *RecruiterProfile `json:"profile,omitempty"`
+	Jobs    []Job             `json:"jobs,omitempty"`
 }
 
 type RecruiterProfile struct {

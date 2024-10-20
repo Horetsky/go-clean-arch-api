@@ -1,11 +1,14 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+CREATE TYPE PROFILE_TYPE AS ENUM ('TALENT', 'RECRUITER');
+
 CREATE TABLE users (
     id uuid DEFAULT gen_random_uuid(),
     email varchar(255) NOT NULL UNIQUE,
     password varchar(255) NOT NULL,
     picture text,
     email_verified boolean DEFAULT FALSE,
+    type profile_type
 
     CONSTRAINT PK_user PRIMARY KEY (id)
 );
@@ -69,11 +72,11 @@ CREATE TABLE jobs (
     CONSTRAINT FK_job_recruiter FOREIGN KEY (recruiter_id) REFERENCES recruiters(id) ON DELETE CASCADE
 );
 
-CREATE TABLE talent_saved_jobs (
-    talent_id uuid,
-    job_id uuid,
+CREATE table job_applications (
+    talent_id uuid NOT NULL,
+    job_id uuid NOT NULL,
 
-    CONSTRAINT PK_saved_job PRIMARY KEY (talent_id, job_id),
-    CONSTRAINT FK_saved_job_talent FOREIGN KEY (talent_id) REFERENCES "talents"(id),
-    CONSTRAINT FK_saved_job_job FOREIGN KEY (job_id) REFERENCES "jobs"(id)
+    CONSTRAINT U_talent_job UNIQUE (talent_id, job_id),
+    CONSTRAINT FK_application_talent FOREIGN KEY (talent_id) REFERENCES talents(id),
+    CONSTRAINT FK_application_job FOREIGN KEY (job_id) REFERENCES jobs(id)
 );

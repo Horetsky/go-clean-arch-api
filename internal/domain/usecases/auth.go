@@ -21,20 +21,26 @@ type AuthUsecase interface {
 }
 
 type authUsecase struct {
-	userRepository repositories.UserRepository
-	jwtService     services.JWTService
-	emailService   services.EmailService
+	userRepository      repositories.UserRepository
+	talentRepository    repositories.TalentRepository
+	recruiterRepository repositories.RecruiterRepository
+	jwtService          services.JWTService
+	emailService        services.EmailService
 }
 
 func NewAuthUsecase(
 	userRepository repositories.UserRepository,
+	talentRepository repositories.TalentRepository,
+	recruiterRepository repositories.RecruiterRepository,
 	jwtService services.JWTService,
 	emailService services.EmailService,
 ) AuthUsecase {
 	return &authUsecase{
-		userRepository: userRepository,
-		jwtService:     jwtService,
-		emailService:   emailService,
+		userRepository:      userRepository,
+		talentRepository:    talentRepository,
+		recruiterRepository: recruiterRepository,
+		jwtService:          jwtService,
+		emailService:        emailService,
 	}
 }
 
@@ -55,6 +61,7 @@ func (u *authUsecase) Register(input dto.RegisterUserInput) (dto.JWTTokenRespons
 
 	newUser := &entities.User{
 		Email: input.Email,
+		Type:  input.Type,
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
@@ -106,6 +113,20 @@ func (u *authUsecase) Login(input dto.LoginUserInput) (dto.JWTTokenResponse, dto
 		return tokens, session, errs.ErrInvalidPassword
 	}
 
+	if dbUser.Type == entities.TalentType {
+		talent, err := u.talentRepository.GetOneByUserId(dbUser.ID)
+		if err == nil {
+			dbUser.Talent = &talent
+		}
+	}
+
+	if dbUser.Type == entities.RecruiterType {
+		recruiter, err := u.recruiterRepository.GetOneByUserId(dbUser.ID)
+		if err == nil {
+			dbUser.Recruiter = &recruiter
+		}
+	}
+
 	tokens, session, err = u.GenerateSession(&dbUser)
 
 	if err != nil {
@@ -119,17 +140,31 @@ func (u *authUsecase) VerifyEmail(email string) (dto.JWTTokenResponse, dto.JWTSe
 	var tokens dto.JWTTokenResponse
 	var session dto.JWTSession
 
-	newUser := &entities.User{
+	newUser := entities.User{
 		EmailVerified: true,
 	}
 
-	err := u.userRepository.UpdateByEmail(email, newUser)
+	err := u.userRepository.UpdateByEmail(email, &newUser)
 
 	if err != nil {
 		return tokens, session, errs.ErrFailedToVerifyEmail
 	}
 
-	tokens, session, err = u.GenerateSession(newUser)
+	if newUser.Type == entities.TalentType {
+		talent, err := u.talentRepository.GetOneByUserId(newUser.ID)
+		if err == nil {
+			newUser.Talent = &talent
+		}
+	}
+
+	if newUser.Type == entities.RecruiterType {
+		recruiter, err := u.recruiterRepository.GetOneByUserId(newUser.ID)
+		if err == nil {
+			newUser.Recruiter = &recruiter
+		}
+	}
+
+	tokens, session, err = u.GenerateSession(&newUser)
 
 	if err != nil {
 		return tokens, session, err

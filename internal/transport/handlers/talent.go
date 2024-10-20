@@ -69,7 +69,7 @@ func (h *talentHandler) handleCreateTalentProfile(w http.ResponseWriter, r *http
 		Talent:        &profile,
 	}
 
-	tokens, s, err := h.authUsecase.GenerateSession(user)
+	tokens, _, err := h.authUsecase.GenerateSession(user)
 
 	if err != nil {
 		response.Error(w, err, http.StatusBadRequest)
@@ -78,5 +78,5 @@ func (h *talentHandler) handleCreateTalentProfile(w http.ResponseWriter, r *http
 
 	response.PrivateCookie(w, dto.AccessTokenCookieKey, tokens.AccessToken)
 	response.PrivateCookie(w, dto.RefreshTokenCookieKey, tokens.RefreshToken)
-	response.JSON(w, s, http.StatusCreated)
+	response.JSON(w, profile, http.StatusCreated)
 }
