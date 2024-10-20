@@ -18,7 +18,23 @@ func NewUserRepository(client postgres.Client) repositories.UserRepository {
 	}
 }
 
-func (r *userRepository) GetByEmail(email string) (entities.User, error) {
+func (r *userRepository) Create(user *entities.User) error {
+	query := `
+		INSERT INTO "users" (email, password, type) 
+		VALUES ($1, $2, $3)
+		RETURNING id, email, picture, email_verified
+	`
+
+	row := r.client.QueryRow(query, user.Email, user.Password, user.Type)
+
+	if err := row.Scan(&user.ID, &user.Email, &user.Picture, &user.EmailVerified); err != nil {
+		return postgres.NewError(err)
+	}
+
+	return nil
+}
+
+func (r *userRepository) FindByEmail(email string) (entities.User, error) {
 	query := `
 		SELECT id, email, picture, email_verified, password, type FROM users
 		WHERE email = $1
@@ -41,7 +57,7 @@ func (r *userRepository) GetByEmail(email string) (entities.User, error) {
 	return user, nil
 }
 
-func (r *userRepository) GetByID(id string) (entities.User, error) {
+func (r *userRepository) FindByID(id string) (entities.User, error) {
 	query := `
 		SELECT id, email, picture, email_verified, password FROM "users"
 		WHERE id = $1
@@ -55,22 +71,6 @@ func (r *userRepository) GetByID(id string) (entities.User, error) {
 	}
 
 	return user, nil
-}
-
-func (r *userRepository) CreateOne(user *entities.User) error {
-	query := `
-		INSERT INTO "users" (email, password, type) 
-		VALUES ($1, $2, $3)
-		RETURNING id, email, picture, email_verified
-	`
-
-	row := r.client.QueryRow(query, user.Email, user.Password, user.Type)
-
-	if err := row.Scan(&user.ID, &user.Email, &user.Picture, &user.EmailVerified); err != nil {
-		return postgres.NewError(err)
-	}
-
-	return nil
 }
 
 func (r *userRepository) UpdateByEmail(email string, user *entities.User) error {

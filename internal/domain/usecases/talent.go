@@ -47,7 +47,7 @@ func NewTalentUsecase(
 }
 
 func (u *talentUsecase) CreateProfile(input dto.CreateTalentProfileInput) (entities.Talent, error) {
-	dbTalent, err := u.talentRepository.GetOneByUserId(input.UserID)
+	dbTalent, err := u.talentRepository.FindByUserID(input.UserID)
 
 	if err != nil {
 		if !errors.Is(err, pgx.ErrNoRows) {
@@ -71,7 +71,7 @@ func (u *talentUsecase) CreateProfile(input dto.CreateTalentProfileInput) (entit
 		UserID: input.UserID,
 	}
 
-	err = u.talentRepository.CreateOne(tx, &newTalent)
+	err = u.talentRepository.Create(tx, &newTalent)
 	if err != nil {
 		return entities.Talent{}, errs.ErrFailedToCreateTalent
 	}
@@ -139,7 +139,7 @@ func (u *talentUsecase) sendApplicationEmailNotification(talentId string, jobId 
 		return
 	}
 
-	dbUser, err := u.userRepository.GetByID(job.Recruiter.UserID)
+	dbUser, err := u.userRepository.FindByID(job.Recruiter.UserID)
 
 	if err != nil {
 		log.Println(errs.ErrFailedToSendApplicationEmail)

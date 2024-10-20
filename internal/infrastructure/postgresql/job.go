@@ -20,7 +20,7 @@ func NewJobRepository(
 	}
 }
 
-func (r *jobRepository) CreateJob(job *entities.Job) error {
+func (r *jobRepository) Create(job *entities.Job) error {
 	query := `
 		INSERT INTO jobs (recruiter_id, category, title, description, requirements)
 		VALUES ($1, $2, $3, $4, $5)
@@ -87,11 +87,6 @@ func (r *jobRepository) FindByID(id string) (entities.JobWithRecruiter, error) {
 	return job, nil
 }
 
-func (r *jobRepository) FindByRecruiter(recruiterId string) (entities.Job, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
 func (r *jobRepository) ApplyJob(talentId, jobId string) error {
 	query := `
 		INSERT INTO job_applications (talent_id, job_id)
@@ -153,21 +148,6 @@ func (r *jobRepository) UpdateJob(job *entities.Job) error {
 	query += fmt.Sprintf(" WHERE id = '%s'", job.ID)
 
 	row := r.client.QueryRow(query)
-
-	if err := row.Scan(); err != nil {
-		return postgres.NewError(err)
-	}
-
-	return nil
-}
-
-func (r *jobRepository) DeleteJob(jobId string) error {
-	query := `
-		DELETE FROM jobs
-		WHERE id = $1
-	`
-
-	row := r.client.QueryRow(query, jobId)
 
 	if err := row.Scan(); err != nil {
 		return postgres.NewError(err)

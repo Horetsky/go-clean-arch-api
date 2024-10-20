@@ -35,7 +35,7 @@ func NewRecruiterUsecase(
 }
 
 func (u *recruiterUsecase) CreateProfile(input dto.CreateRecruiterProfileInput) (entities.Recruiter, error) {
-	dbRecruiter, err := u.recruiterRepository.GetOneByUserId(input.UserID)
+	dbRecruiter, err := u.recruiterRepository.FindByUserID(input.UserID)
 
 	if err != nil {
 		if !errors.Is(err, pgx.ErrNoRows) {
@@ -59,7 +59,7 @@ func (u *recruiterUsecase) CreateProfile(input dto.CreateRecruiterProfileInput) 
 		UserID: input.UserID,
 	}
 
-	err = u.recruiterRepository.CreateOne(tx, &newRecruiter)
+	err = u.recruiterRepository.Create(tx, &newRecruiter)
 	if err != nil {
 		return entities.Recruiter{}, errs.ErrFailedToCreateRecruiter
 	}
@@ -93,7 +93,7 @@ func (u *recruiterUsecase) PostJob(input dto.PostJobDTO) (entities.Job, error) {
 		Requirements: input.Requirements,
 	}
 
-	err := u.jobRepository.CreateJob(&newJob)
+	err := u.jobRepository.Create(&newJob)
 
 	if err != nil {
 		return entities.Job{}, errs.ErrFailedToPostJob

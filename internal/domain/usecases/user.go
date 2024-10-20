@@ -26,7 +26,7 @@ func (u userUsecase) FindUser(values url.Values) (entities.User, error) {
 	var user entities.User
 
 	if userId != "" {
-		user, err := u.userRepository.GetByID(userId)
+		user, err := u.userRepository.FindByID(userId)
 		if err != nil {
 			return user, errs.ErrUserDoesNotExist
 		}
@@ -36,7 +36,7 @@ func (u userUsecase) FindUser(values url.Values) (entities.User, error) {
 	userEmail := values.Get("email")
 
 	if userEmail != "" {
-		user, err := u.userRepository.GetByEmail(userEmail)
+		user, err := u.userRepository.FindByEmail(userEmail)
 		if err != nil {
 			return user, errs.ErrUserDoesNotExist
 		}

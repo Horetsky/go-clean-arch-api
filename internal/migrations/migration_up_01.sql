@@ -77,6 +77,6 @@ CREATE table job_applications (
     job_id uuid NOT NULL,
 
     CONSTRAINT U_talent_job UNIQUE (talent_id, job_id),
-    CONSTRAINT FK_application_talent FOREIGN KEY (talent_id) REFERENCES talents(id),
-    CONSTRAINT FK_application_job FOREIGN KEY (job_id) REFERENCES jobs(id)
+    CONSTRAINT FK_application_talent FOREIGN KEY (talent_id) REFERENCES talents(id) ON DELETE CASCADE,
+    CONSTRAINT FK_application_job FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE
 );

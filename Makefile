@@ -3,3 +3,6 @@ build:
 
 run: build
 	@./bin/api
+
+start:
+	@./bin/api

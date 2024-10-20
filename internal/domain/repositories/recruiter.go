@@ -7,9 +7,9 @@ import (
 )
 
 type RecruiterRepository interface {
-	CreateOne(tx *pgx.Tx, recruiter *entities.Recruiter) error
-	GetOneByUserId(userId string) (entities.Recruiter, error)
+	Create(tx *pgx.Tx, recruiter *entities.Recruiter) error
+	FindByUserID(userId string) (entities.Recruiter, error)
 	CreateProfile(tx *pgx.Tx, profile *entities.RecruiterProfile) error
-	GetProfileByRecruiterId(recruiterId string) (entities.Recruiter, error)
-	UpdateProfileByUserId(userId string, profile *entities.RecruiterProfile) error
+	FindProfileByRecruiterID(recruiterId string) (entities.Recruiter, error)
+	UpdateProfile(userId string, profile *entities.RecruiterProfile) error
 }

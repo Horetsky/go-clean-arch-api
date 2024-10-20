@@ -20,7 +20,7 @@ func NewTalentRepository(client postgres.Client) repositories.TalentRepository {
 	}
 }
 
-func (r *talentRepository) CreateOne(tx *pgx.Tx, talent *entities.Talent) error {
+func (r *talentRepository) Create(tx *pgx.Tx, talent *entities.Talent) error {
 	query := `
 		INSERT INTO talents (user_id)
 		VALUES ($1)
@@ -75,7 +75,7 @@ func (r *talentRepository) FindByID(id string) (entities.Talent, error) {
 	return talent, nil
 }
 
-func (r *talentRepository) GetOneByUserId(userId string) (entities.Talent, error) {
+func (r *talentRepository) FindByUserID(userId string) (entities.Talent, error) {
 	query := `
 		SELECT id, user_id FROM talents
 		WHERE user_id = $1
@@ -118,7 +118,7 @@ func (r *talentRepository) CreateProfile(tx *pgx.Tx, profile *entities.TalentPro
 	return nil
 }
 
-func (r *talentRepository) GetProfileByTalentId(talentId string) (entities.Talent, error) {
+func (r *talentRepository) FindProfileByTalentID(talentId string) (entities.Talent, error) {
 	query := `
 		SELECT id, 
 		       user_id,
@@ -158,7 +158,7 @@ func (r *talentRepository) GetProfileByTalentId(talentId string) (entities.Talen
 	return talent, nil
 }
 
-func (r *talentRepository) UpdateProfileByUserId(userId string, profile *entities.TalentProfile) error {
+func (r *talentRepository) UpdateProfile(userId string, profile *entities.TalentProfile) error {
 	query := `
 		UPDATE talent_profiles SET
 	`

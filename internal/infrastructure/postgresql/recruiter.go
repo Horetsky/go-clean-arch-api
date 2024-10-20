@@ -20,7 +20,7 @@ func NewRecruiterRepository(client postgres.Client) repositories.RecruiterReposi
 	}
 }
 
-func (r recruiterRepository) CreateOne(tx *pgx.Tx, recruiter *entities.Recruiter) error {
+func (r recruiterRepository) Create(tx *pgx.Tx, recruiter *entities.Recruiter) error {
 	query := `
 		INSERT INTO recruiters (user_id)
 		VALUES ($1)
@@ -36,7 +36,7 @@ func (r recruiterRepository) CreateOne(tx *pgx.Tx, recruiter *entities.Recruiter
 	return nil
 }
 
-func (r recruiterRepository) GetOneByUserId(userId string) (entities.Recruiter, error) {
+func (r recruiterRepository) FindByUserID(userId string) (entities.Recruiter, error) {
 	query := `
 		SELECT id, user_id FROM recruiters
 		WHERE user_id = $1
@@ -78,7 +78,7 @@ func (r recruiterRepository) CreateProfile(tx *pgx.Tx, profile *entities.Recruit
 	return nil
 }
 
-func (r recruiterRepository) GetProfileByRecruiterId(recruiterId string) (entities.Recruiter, error) {
+func (r recruiterRepository) FindProfileByRecruiterID(recruiterId string) (entities.Recruiter, error) {
 	query := `
 		SELECT id, 
 		       user_id,
@@ -116,7 +116,7 @@ func (r recruiterRepository) GetProfileByRecruiterId(recruiterId string) (entiti
 	return recruiter, nil
 }
 
-func (r recruiterRepository) UpdateProfileByUserId(recruiterId string, profile *entities.RecruiterProfile) error {
+func (r recruiterRepository) UpdateProfile(recruiterId string, profile *entities.RecruiterProfile) error {
 	query := `
 		UPDATE recruiter_profiles SET
 	`

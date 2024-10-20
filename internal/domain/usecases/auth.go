@@ -45,7 +45,7 @@ func NewAuthUsecase(
 }
 
 func (u *authUsecase) Register(input dto.RegisterUserInput) (dto.JWTTokenResponse, dto.JWTSession, error) {
-	dbUser, err := u.userRepository.GetByEmail(input.Email)
+	dbUser, err := u.userRepository.FindByEmail(input.Email)
 	var tokens dto.JWTTokenResponse
 	var session dto.JWTSession
 
@@ -72,7 +72,7 @@ func (u *authUsecase) Register(input dto.RegisterUserInput) (dto.JWTTokenRespons
 
 	newUser.Password = string(hashedPassword)
 
-	err = u.userRepository.CreateOne(newUser)
+	err = u.userRepository.Create(newUser)
 
 	if err != nil {
 		return tokens, session, err
@@ -95,7 +95,7 @@ func (u *authUsecase) Register(input dto.RegisterUserInput) (dto.JWTTokenRespons
 }
 
 func (u *authUsecase) Login(input dto.LoginUserInput) (dto.JWTTokenResponse, dto.JWTSession, error) {
-	dbUser, err := u.userRepository.GetByEmail(input.Email)
+	dbUser, err := u.userRepository.FindByEmail(input.Email)
 	var tokens dto.JWTTokenResponse
 	var session dto.JWTSession
 
@@ -114,14 +114,14 @@ func (u *authUsecase) Login(input dto.LoginUserInput) (dto.JWTTokenResponse, dto
 	}
 
 	if dbUser.Type == entities.TalentType {
-		talent, err := u.talentRepository.GetOneByUserId(dbUser.ID)
+		talent, err := u.talentRepository.FindByUserID(dbUser.ID)
 		if err == nil {
 			dbUser.Talent = &talent
 		}
 	}
 
 	if dbUser.Type == entities.RecruiterType {
-		recruiter, err := u.recruiterRepository.GetOneByUserId(dbUser.ID)
+		recruiter, err := u.recruiterRepository.FindByUserID(dbUser.ID)
 		if err == nil {
 			dbUser.Recruiter = &recruiter
 		}
@@ -151,14 +151,14 @@ func (u *authUsecase) VerifyEmail(email string) (dto.JWTTokenResponse, dto.JWTSe
 	}
 
 	if newUser.Type == entities.TalentType {
-		talent, err := u.talentRepository.GetOneByUserId(newUser.ID)
+		talent, err := u.talentRepository.FindByUserID(newUser.ID)
 		if err == nil {
 			newUser.Talent = &talent
 		}
 	}
 
 	if newUser.Type == entities.RecruiterType {
-		recruiter, err := u.recruiterRepository.GetOneByUserId(newUser.ID)
+		recruiter, err := u.recruiterRepository.FindByUserID(newUser.ID)
 		if err == nil {
 			newUser.Recruiter = &recruiter
 		}
