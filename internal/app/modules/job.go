@@ -3,6 +3,7 @@ package modules
 import (
 	"log"
 	"seeker/internal/domain/usecases"
+	"seeker/internal/infrastructure/postgresql"
 	"seeker/internal/transport/handlers"
 	"seeker/pkg/db/postgres"
 
@@ -11,13 +12,18 @@ import (
 
 func NewJobModule(
 	router *httprouter.Router,
-	_ postgres.Client,
+	pqClient postgres.Client,
 	recruiterUsecase usecases.RecruiterUsecase,
 	talentUsecase usecases.TalentUsecase,
 ) usecases.JobUsecase {
 
-	usecase := usecases.NewJobUsecase()
-	handlers.NewJobHandler(recruiterUsecase, talentUsecase).Register(router)
+	jobRepository := postgresql.NewJobRepository(pqClient)
+	usecase := usecases.NewJobUsecase(jobRepository)
+	handlers.NewJobHandler(
+		recruiterUsecase,
+		talentUsecase,
+		usecase,
+	).Register(router)
 
 	log.Println("JobModule dependencies initialized")
 

@@ -28,3 +28,7 @@ type SendJobApplicationEmailDTO struct {
 	ApplicantName string
 	CompanyName   string
 }
+
+type ListJobDTO struct {
+	Category string `json:"category,omitempty"`
+}

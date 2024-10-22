@@ -36,6 +36,72 @@ func (r *jobRepository) Create(job *entities.Job) error {
 	return nil
 }
 
+func (r *jobRepository) FindAll() ([]entities.JobWithRecruiter, error) {
+	query := `
+		SELECT 
+		    job.id,
+		    job.recruiter_id,
+		    job.category,
+		    job.title,
+		    job.description,
+		    job.requirements,
+		    recruiter.id,
+		    recruiter.user_id,
+		    profile.first_name,
+			profile.last_name,
+			profile.phone,
+			profile.linkedIn_url,
+			profile.company_name,
+			profile.company_website_url
+		FROM jobs AS job
+		JOIN recruiters AS recruiter ON job.recruiter_id = recruiter.id
+		JOIN recruiter_profiles AS profile ON recruiter.id = profile.recruiter_id
+	`
+
+	rows, err := r.client.Query(query)
+
+	if err != nil {
+		return nil, postgres.NewError(err)
+	}
+
+	defer rows.Close()
+
+	var jobs []entities.JobWithRecruiter
+
+	for rows.Next() {
+		var job entities.JobWithRecruiter
+		job.Recruiter = entities.Recruiter{}
+		job.Recruiter.Profile = &entities.RecruiterProfile{}
+
+		if err := rows.Scan(
+			&job.ID,
+			&job.RecruiterID,
+			&job.Category,
+			&job.Title,
+			&job.Description,
+			&job.Requirements,
+			&job.Recruiter.ID,
+			&job.Recruiter.UserID,
+			&job.Recruiter.Profile.FirstName,
+			&job.Recruiter.Profile.LastName,
+			&job.Recruiter.Profile.Phone,
+			&job.Recruiter.Profile.LinkedInUrl,
+			&job.Recruiter.Profile.CompanyName,
+			&job.Recruiter.Profile.CompanyWebsiteUrl,
+		); err != nil {
+			return nil, postgres.NewError(err)
+		}
+
+		jobs = append(jobs, job)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, postgres.NewError(err)
+	}
+
+	return jobs, nil
+}
+
 func (r *jobRepository) FindByID(id string) (entities.JobWithRecruiter, error) {
 	query := `
 		SELECT 
@@ -85,6 +151,73 @@ func (r *jobRepository) FindByID(id string) (entities.JobWithRecruiter, error) {
 	}
 
 	return job, nil
+}
+
+func (r *jobRepository) FindByCategory(category string) ([]entities.JobWithRecruiter, error) {
+	query := `
+			SELECT 
+		    job.id,
+		    job.recruiter_id,
+		    job.category,
+		    job.title,
+		    job.description,
+		    job.requirements,
+		    recruiter.id,
+		    recruiter.user_id,
+		    profile.first_name,
+			profile.last_name,
+			profile.phone,
+			profile.linkedIn_url,
+			profile.company_name,
+			profile.company_website_url
+		FROM jobs AS job
+		JOIN recruiters AS recruiter ON job.recruiter_id = recruiter.id
+		JOIN recruiter_profiles AS profile ON recruiter.id = profile.recruiter_id
+		WHERE job.category = $1
+	`
+
+	rows, err := r.client.Query(query, category)
+
+	if err != nil {
+		return nil, postgres.NewError(err)
+	}
+
+	defer rows.Close()
+
+	var jobs []entities.JobWithRecruiter
+
+	for rows.Next() {
+		var job entities.JobWithRecruiter
+		job.Recruiter = entities.Recruiter{}
+		job.Recruiter.Profile = &entities.RecruiterProfile{}
+
+		if err := rows.Scan(
+			&job.ID,
+			&job.RecruiterID,
+			&job.Category,
+			&job.Title,
+			&job.Description,
+			&job.Requirements,
+			&job.Recruiter.ID,
+			&job.Recruiter.UserID,
+			&job.Recruiter.Profile.FirstName,
+			&job.Recruiter.Profile.LastName,
+			&job.Recruiter.Profile.Phone,
+			&job.Recruiter.Profile.LinkedInUrl,
+			&job.Recruiter.Profile.CompanyName,
+			&job.Recruiter.Profile.CompanyWebsiteUrl,
+		); err != nil {
+			return nil, postgres.NewError(err)
+		}
+
+		jobs = append(jobs, job)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, postgres.NewError(err)
+	}
+
+	return jobs, nil
 }
 
 func (r *jobRepository) ApplyJob(talentId, jobId string) error {

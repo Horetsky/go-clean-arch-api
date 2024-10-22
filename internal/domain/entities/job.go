@@ -10,7 +10,7 @@ type Job struct {
 }
 type JobWithRecruiter struct {
 	Job
-	Recruiter Recruiter
+	Recruiter Recruiter `json:"recruiter"`
 }
 
 type JobApplication struct {
