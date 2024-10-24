@@ -30,11 +30,13 @@ func NewRecruiterHandler(
 }
 
 const (
-	recruiter = "/recruiter"
+	recruiter      = "/recruiter"
+	listRecruiters = recruiter + "/list"
 )
 
 func (h *recruiterHandler) Register(router *httprouter.Router) {
 	router.POST(recruiter, middlewares.WithAuth(h.handleCreateRecruiterProfile))
+	router.GET(listRecruiters, middlewares.WithAuth(h.handleListRecruiters))
 }
 
 func (h *recruiterHandler) handleCreateRecruiterProfile(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -80,4 +82,15 @@ func (h *recruiterHandler) handleCreateRecruiterProfile(w http.ResponseWriter, r
 	response.PrivateCookie(w, dto.AccessTokenCookieKey, tokens.AccessToken)
 	response.PrivateCookie(w, dto.RefreshTokenCookieKey, tokens.RefreshToken)
 	response.JSON(w, profile, http.StatusCreated)
+}
+
+func (h *recruiterHandler) handleListRecruiters(w http.ResponseWriter, _ *http.Request, _ httprouter.Params) {
+	recruiters, err := h.usecase.ListRecruiters()
+
+	if err != nil {
+		response.Error(w, nil, http.StatusBadRequest)
+		return
+	}
+
+	response.JSON(w, recruiters, http.StatusOK)
 }

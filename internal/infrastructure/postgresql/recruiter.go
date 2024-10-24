@@ -36,6 +36,62 @@ func (r recruiterRepository) Create(tx *pgx.Tx, recruiter *entities.Recruiter) e
 	return nil
 }
 
+func (r recruiterRepository) FindAll() ([]entities.Recruiter, error) {
+	query := `
+		SELECT 
+		    recruiter.id,
+		    recruiter.user_id,
+		    profile.id,
+			profile.recruiter_id,
+			profile.first_name,
+			profile.last_name,
+			profile.phone,
+			profile.linkedIn_url,
+			profile.company_name,
+			profile.company_website_url
+		FROM recruiters AS recruiter
+		JOIN recruiter_profiles AS profile ON recruiter.id = profile.recruiter_id
+	`
+
+	rows, err := r.client.Query(query)
+
+	if err != nil {
+		return nil, postgres.NewError(err)
+	}
+
+	defer rows.Close()
+
+	var recruiters []entities.Recruiter
+
+	for rows.Next() {
+		var recruiter entities.Recruiter
+		recruiter.Profile = &entities.RecruiterProfile{}
+
+		if err := rows.Scan(
+			&recruiter.ID,
+			&recruiter.UserID,
+			&recruiter.Profile.ID,
+			&recruiter.Profile.RecruiterID,
+			&recruiter.Profile.FirstName,
+			&recruiter.Profile.LastName,
+			&recruiter.Profile.Phone,
+			&recruiter.Profile.LinkedInUrl,
+			&recruiter.Profile.CompanyName,
+			&recruiter.Profile.CompanyWebsiteUrl,
+		); err != nil {
+			return nil, postgres.NewError(err)
+		}
+
+		recruiters = append(recruiters, recruiter)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, postgres.NewError(err)
+	}
+
+	return recruiters, nil
+}
+
 func (r recruiterRepository) FindByUserID(userId string) (entities.Recruiter, error) {
 	query := `
 		SELECT id, user_id FROM recruiters

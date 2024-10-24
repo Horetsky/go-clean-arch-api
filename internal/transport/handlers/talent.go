@@ -83,7 +83,7 @@ func (h *talentHandler) handleCreateTalentProfile(w http.ResponseWriter, r *http
 	response.JSON(w, profile, http.StatusCreated)
 }
 
-func (h *talentHandler) handleListTalents(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+func (h *talentHandler) handleListTalents(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	queryValues := r.URL.Query()
 
 	category := queryValues.Get("category")

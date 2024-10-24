@@ -43,7 +43,7 @@ func (h *jobHandler) Register(router *httprouter.Router) {
 	router.GET(listJobs, middlewares.WithAuth(h.handleListJobs))
 }
 
-func (h *jobHandler) handlePostJob(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+func (h *jobHandler) handlePostJob(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var body dto.PostJobDTO
 
 	session, err := request.GetSession(r)
@@ -97,7 +97,7 @@ func (h *jobHandler) handleApplyJob(w http.ResponseWriter, r *http.Request, _ ht
 	response.JSON(w, "OK", http.StatusOK)
 }
 
-func (h *jobHandler) handleListJobs(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+func (h *jobHandler) handleListJobs(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	queryValues := r.URL.Query()
 
 	category := queryValues.Get("category")

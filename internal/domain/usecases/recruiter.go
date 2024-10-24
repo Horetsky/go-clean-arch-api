@@ -14,6 +14,7 @@ import (
 type RecruiterUsecase interface {
 	CreateProfile(input dto.CreateRecruiterProfileInput) (entities.Recruiter, error)
 	PostJob(input dto.PostJobDTO) (entities.Job, error)
+	ListRecruiters() ([]entities.Recruiter, error)
 }
 
 type recruiterUsecase struct {
@@ -100,4 +101,8 @@ func (u *recruiterUsecase) PostJob(input dto.PostJobDTO) (entities.Job, error) {
 	}
 
 	return newJob, nil
+}
+
+func (u *recruiterUsecase) ListRecruiters() ([]entities.Recruiter, error) {
+	return u.recruiterRepository.FindAll()
 }
