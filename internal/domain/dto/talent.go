@@ -14,3 +14,7 @@ type CreateTalentProfileInput struct {
 type UpdateTalentProfile struct {
 	*CreateTalentProfileInput
 }
+
+type ListTalentDTO struct {
+	Category string `json:"category,omitempty"`
+}

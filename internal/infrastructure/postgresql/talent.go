@@ -36,6 +36,123 @@ func (r *talentRepository) Create(tx *pgx.Tx, talent *entities.Talent) error {
 	return nil
 }
 
+func (r *talentRepository) FindAll() ([]entities.Talent, error) {
+	query := `
+		SELECT 
+		    talent.id,
+			talent.user_id,
+			profile.id,
+			profile.talent_id,
+			profile.category,
+			profile.first_name,
+			profile.last_name,
+			profile.phone,
+			profile.linkedIn_url,
+			profile.resume_url,
+			profile.photo
+		FROM talents AS talent
+		JOIN talent_profiles AS profile ON talent.id = profile.talent_id
+	`
+
+	rows, err := r.client.Query(query)
+
+	if err != nil {
+		return nil, postgres.NewError(err)
+	}
+
+	defer rows.Close()
+
+	var talents []entities.Talent
+
+	for rows.Next() {
+		var talent entities.Talent
+		talent.Profile = &entities.TalentProfile{}
+
+		if err := rows.Scan(
+			&talent.ID,
+			&talent.UserID,
+			&talent.Profile.ID,
+			&talent.Profile.TalentId,
+			&talent.Profile.Category,
+			&talent.Profile.FirstName,
+			&talent.Profile.LastName,
+			&talent.Profile.Phone,
+			&talent.Profile.LinkedInUrl,
+			&talent.Profile.ResumeUrl,
+			&talent.Profile.Photo,
+		); err != nil {
+			return nil, postgres.NewError(err)
+		}
+
+		talents = append(talents, talent)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, postgres.NewError(err)
+	}
+
+	return talents, nil
+}
+
+func (r *talentRepository) FindByCategory(category string) ([]entities.Talent, error) {
+	query := `
+		SELECT 
+		    talent.id,
+			talent.user_id,
+			profile.id,
+			profile.talent_id,
+			profile.category,
+			profile.first_name,
+			profile.last_name,
+			profile.phone,
+			profile.linkedIn_url,
+			profile.resume_url,
+			profile.photo
+		FROM talents AS talent
+		JOIN talent_profiles AS profile ON talent.id = profile.talent_id
+		WHERE profile.category = $1
+	`
+
+	rows, err := r.client.Query(query, category)
+
+	if err != nil {
+		return nil, postgres.NewError(err)
+	}
+
+	defer rows.Close()
+
+	var talents []entities.Talent
+
+	for rows.Next() {
+		var talent entities.Talent
+		talent.Profile = &entities.TalentProfile{}
+
+		if err := rows.Scan(
+			&talent.ID,
+			&talent.UserID,
+			&talent.Profile.ID,
+			&talent.Profile.TalentId,
+			&talent.Profile.Category,
+			&talent.Profile.FirstName,
+			&talent.Profile.LastName,
+			&talent.Profile.Phone,
+			&talent.Profile.LinkedInUrl,
+			&talent.Profile.ResumeUrl,
+			&talent.Profile.Photo,
+		); err != nil {
+			return nil, postgres.NewError(err)
+		}
+
+		talents = append(talents, talent)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, postgres.NewError(err)
+	}
+
+	return talents, nil
+}
+
 func (r *talentRepository) FindByID(id string) (entities.Talent, error) {
 	query := `
 		SELECT

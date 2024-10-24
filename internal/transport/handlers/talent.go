@@ -30,11 +30,13 @@ func NewTalentHandler(
 }
 
 const (
-	talent = "/talent"
+	talent      = "/talent"
+	listTalents = talent + "/list"
 )
 
 func (h *talentHandler) Register(router *httprouter.Router) {
 	router.POST(talent, middlewares.WithAuth(h.handleCreateTalentProfile))
+	router.GET(listTalents, middlewares.WithAuth(h.handleListTalents))
 }
 
 func (h *talentHandler) handleCreateTalentProfile(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -79,4 +81,23 @@ func (h *talentHandler) handleCreateTalentProfile(w http.ResponseWriter, r *http
 	response.PrivateCookie(w, dto.AccessTokenCookieKey, tokens.AccessToken)
 	response.PrivateCookie(w, dto.RefreshTokenCookieKey, tokens.RefreshToken)
 	response.JSON(w, profile, http.StatusCreated)
+}
+
+func (h *talentHandler) handleListTalents(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+	queryValues := r.URL.Query()
+
+	category := queryValues.Get("category")
+
+	input := dto.ListTalentDTO{
+		Category: category,
+	}
+
+	talents, err := h.usecase.ListTalents(input)
+
+	if err != nil {
+		response.Error(w, nil, http.StatusBadRequest)
+		return
+	}
+
+	response.JSON(w, talents, http.StatusOK)
 }

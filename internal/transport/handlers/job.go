@@ -32,15 +32,15 @@ func NewJobHandler(
 }
 
 const (
-	job   = "/job"
-	apply = job + "/apply"
-	list  = job + "/list"
+	job      = "/job"
+	apply    = job + "/apply"
+	listJobs = job + "/list"
 )
 
 func (h *jobHandler) Register(router *httprouter.Router) {
 	router.POST(job, middlewares.WithAuth(h.handlePostJob))
 	router.POST(apply, middlewares.WithAuth(h.handleApplyJob))
-	router.GET(list, h.handleListJobs)
+	router.GET(listJobs, middlewares.WithAuth(h.handleListJobs))
 }
 
 func (h *jobHandler) handlePostJob(w http.ResponseWriter, r *http.Request, params httprouter.Params) {

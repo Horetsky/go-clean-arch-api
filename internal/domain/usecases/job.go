@@ -24,13 +24,13 @@ func NewJobUsecase(
 
 func (u *jobUsecase) ListJob(input dto.ListJobDTO) ([]entities.JobWithRecruiter, error) {
 	if input.Category != "" {
-		return u.listByCategory(input.Category)
+		return u.listJobsByCategory(input.Category)
 	}
 
 	return u.listAll()
 }
 
-func (u *jobUsecase) listByCategory(category string) ([]entities.JobWithRecruiter, error) {
+func (u *jobUsecase) listJobsByCategory(category string) ([]entities.JobWithRecruiter, error) {
 	list, err := u.jobRepository.FindByCategory(category)
 	if err != nil {
 		return []entities.JobWithRecruiter{}, nil

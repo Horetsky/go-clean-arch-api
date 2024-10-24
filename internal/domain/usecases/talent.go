@@ -16,6 +16,7 @@ import (
 
 type TalentUsecase interface {
 	CreateProfile(input dto.CreateTalentProfileInput) (entities.Talent, error)
+	ListTalents(input dto.ListTalentDTO) ([]entities.Talent, error)
 	ApplyJob(input dto.ApplyJobDTO) error
 }
 
@@ -122,6 +123,24 @@ func (u *talentUsecase) ApplyJob(input dto.ApplyJobDTO) error {
 	go u.sendApplicationEmailNotification(input.TalentID, input.JobID)
 
 	return nil
+}
+
+func (u *talentUsecase) ListTalents(input dto.ListTalentDTO) ([]entities.Talent, error) {
+	if input.Category != "" {
+		return u.listTalentsByCategory(input.Category)
+	}
+
+	return u.talentRepository.FindAll()
+}
+
+func (u *talentUsecase) listTalentsByCategory(category string) ([]entities.Talent, error) {
+	talents, err := u.talentRepository.FindByCategory(category)
+
+	if err != nil {
+		return []entities.Talent{}, err
+	}
+
+	return talents, nil
 }
 
 func (u *talentUsecase) sendApplicationEmailNotification(talentId string, jobId string) {
