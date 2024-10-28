@@ -3,6 +3,7 @@ package response
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 )
 
 type Response interface {
@@ -53,6 +54,20 @@ func PrivateCookie(w http.ResponseWriter, key string, value string) {
 		Path:     "/",
 		Domain:   "localhost",
 		MaxAge:   5 * 60,
+		Secure:   false,
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+	}
+
+	http.SetCookie(w, cookie)
+}
+
+func RemoveCookie(w http.ResponseWriter, key string) {
+	cookie := &http.Cookie{
+		Name:     key,
+		Path:     "/",
+		Domain:   "localhost",
+		Expires:  time.Unix(0, 0),
 		Secure:   false,
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,

@@ -73,6 +73,21 @@ func (r *userRepository) FindByID(id string) (entities.User, error) {
 	return user, nil
 }
 
+func (r *userRepository) DeleteByEmail(email string) error {
+	query := `
+		DELETE FROM users
+		WHERE email = $1
+	`
+
+	row := r.client.QueryRow(query, email)
+
+	if err := row.Scan(); err != nil {
+		return postgres.NewError(err)
+	}
+
+	return nil
+}
+
 func (r *userRepository) UpdateByEmail(email string, user *entities.User) error {
 	query := `
 		UPDATE "users" SET

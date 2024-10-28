@@ -18,6 +18,7 @@ type AuthUsecase interface {
 	Login(input dto.LoginUserInput) (dto.JWTTokenResponse, dto.JWTSession, error)
 	GenerateSession(user *entities.User) (dto.JWTTokenResponse, dto.JWTSession, error)
 	VerifyEmail(email string) (dto.JWTTokenResponse, dto.JWTSession, error)
+	DeleteAccount(email string) error
 }
 
 type authUsecase struct {
@@ -171,6 +172,16 @@ func (u *authUsecase) VerifyEmail(email string) (dto.JWTTokenResponse, dto.JWTSe
 	}
 
 	return tokens, session, nil
+}
+
+func (u *authUsecase) DeleteAccount(email string) error {
+	err := u.userRepository.DeleteByEmail(email)
+
+	if err != nil {
+		return errs.ErrFailedToDeleteAccount
+	}
+
+	return nil
 }
 
 func (u *authUsecase) GenerateSession(user *entities.User) (dto.JWTTokenResponse, dto.JWTSession, error) {

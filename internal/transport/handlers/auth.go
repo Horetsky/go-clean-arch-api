@@ -23,15 +23,19 @@ func NewAuthHandler(usecase usecases.AuthUsecase) handler.Handler {
 }
 
 const (
-	register    = "/auth/register"
-	login       = "/auth/login"
-	verifyEmail = "/auth/verify-email"
+	register      = "/auth/register"
+	login         = "/auth/login"
+	logout        = "/auth/logout"
+	verifyEmail   = "/auth/verify-email"
+	deleteAccount = "/auth/delete-account"
 )
 
 func (h *authHandler) Register(router *httprouter.Router) {
 	router.POST(register, h.handleRegister)
 	router.POST(login, h.handleLogin)
 	router.GET(verifyEmail, middlewares.WithAuth(h.handleVerifyEmail))
+	router.POST(deleteAccount, middlewares.WithAuth(h.handleDeleteAccount))
+	router.POST(logout, middlewares.WithAuth(h.handleLogout))
 }
 
 func (h *authHandler) handleRegister(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -79,6 +83,11 @@ func (h *authHandler) handleLogin(w http.ResponseWriter, r *http.Request, _ http
 	response.JSON(w, session, http.StatusOK)
 }
 
+func (h *authHandler) handleLogout(w http.ResponseWriter, _ *http.Request, _ httprouter.Params) {
+	response.RemoveCookie(w, dto.AccessTokenCookieKey)
+	response.RemoveCookie(w, dto.RefreshTokenCookieKey)
+}
+
 func (h *authHandler) handleVerifyEmail(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	session, err := request.GetSession(r)
 
@@ -97,4 +106,22 @@ func (h *authHandler) handleVerifyEmail(w http.ResponseWriter, r *http.Request, 
 	response.PrivateCookie(w, dto.AccessTokenCookieKey, tokens.AccessToken)
 	response.PrivateCookie(w, dto.RefreshTokenCookieKey, tokens.RefreshToken)
 	response.JSON(w, newSession, http.StatusOK)
+}
+
+func (h *authHandler) handleDeleteAccount(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	session, err := request.GetSession(r)
+
+	if err != nil {
+		response.Error(w, nil, http.StatusForbidden)
+		return
+	}
+
+	err = h.usecase.DeleteAccount(session.User.Email)
+
+	if err != nil {
+		response.Error(w, err, http.StatusBadRequest)
+		return
+	}
+
+	response.JSON(w, "ok", http.StatusOK)
 }
