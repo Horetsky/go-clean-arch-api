@@ -178,7 +178,9 @@ func (u *authUsecase) DeleteAccount(email string) error {
 	err := u.userRepository.DeleteByEmail(email)
 
 	if err != nil {
-		return errs.ErrFailedToDeleteAccount
+		if !errors.Is(err, pgx.ErrNoRows) {
+			return errs.ErrFailedToDeleteAccount
+		}
 	}
 
 	return nil
